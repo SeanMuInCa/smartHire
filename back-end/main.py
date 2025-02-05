@@ -1,21 +1,17 @@
-from fastapi import FastAPI, UploadFile, File
-from service.embedding import generate_embedding
-from database.faiss_db import search_similar_jobs
-import faiss
-import numpy as np
+from fastapi import FastAPI, File, UploadFile
+from service.resume_parser import parse_resume
 
 app = FastAPI()
 
-# 载入 FAISS 索引
-index = faiss.read_index("database/job_embeddings.faiss")
-
 @app.post("/upload_resume/")
 async def upload_resume(file: UploadFile = File(...)):
-    content = await file.read()
-    embedding = generate_embedding(content.decode("utf-8"))
-    scores, indices = search_similar_jobs(embedding, index)
-    return {"matches": [{"score": float(s), "job_id": int(i)} for s, i in zip(scores[0], indices[0])]}
+    """
+    解析 TXT 简历文件，提取姓名、邮箱、电话、教育背景、技能等信息。
+    """
+    if not file.filename.endswith(".txt"):
+        return {"error": "Only .txt files are supported"}
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to AI Recruitment Backend!"}
+    content = await file.read()
+    parsed_resume = parse_resume(content, file.filename)
+
+    return {"parsed_resume": parsed_resume}
