@@ -1,4 +1,6 @@
 import re
+import sqlite3
+import os
 import spacy
 
 # 加载 spaCy 预训练 NLP 模型（支持实体识别）
@@ -63,10 +65,32 @@ def extract_skills(text):
 
     return ["N/A"]
 
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # 获取当前脚本的目录
+DB_PATH = os.path.join(BASE_DIR, "resumes.db")  # 数据库存储在当前目录
+
+def save_to_db(parsed_resume):
+    """存储解析后的简历数据到 SQLite"""
+    conn = sqlite3.connect(DB_PATH)  # 使用绝对路径
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        INSERT INTO resumes (name, email, phone, education, skills)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (
+        parsed_resume["name"],
+        parsed_resume["email"],
+        parsed_resume["phone"],
+        "; ".join(parsed_resume["education"]),
+        "; ".join(parsed_resume["skills"])
+    ))
+
+    conn.commit()
+    conn.close()
+    print("Resume saved to database!")
+
 def parse_resume(content: bytes, filename: str):
-    """
-    解析 TXT 简历，提取关键信息。
-    """
+    """解析 TXT 简历，提取信息并存入数据库"""
     if not filename.endswith(".txt"):
         return {"error": "Only .txt files are supported"}
 
@@ -80,4 +104,6 @@ def parse_resume(content: bytes, filename: str):
         "skills": extract_skills(text),
     }
 
+    save_to_db(parsed_resume)  # 存入数据库
     return parsed_resume
+
