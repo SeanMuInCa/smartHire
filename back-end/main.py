@@ -67,7 +67,8 @@ def get_resumes():
 
 @app.get("/search_jobs/")
 def search_jobs(query: str):
-    """搜索职位信息，防止缓存"""
-    timestamp = time.time()  # 获取当前时间戳，防止 API 缓存
-    results = google_job_search(f"{query} {timestamp}")  # 传递时间戳
-    return {"jobs": results}
+    """搜索职位信息，确保 Google API 不缓存"""
+    # print(f"🔎 搜索查询: {query}")  # Debug 输出
+
+    results = google_job_search(query)  # 传递 `query` 直接调用 API
+    return {'jobs':results}

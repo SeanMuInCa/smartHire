@@ -1,4 +1,3 @@
-import random
 
 import requests
 import urllib.parse  # 进行 URL 编码
@@ -14,23 +13,23 @@ def google_job_search(query, num_results=5):
     :param num_results: 需要返回的结果数量
     :return: 匹配的职位信息列表
     """
-    query = urllib.parse.quote(query)  # ✅ URL 编码，防止空格和特殊字符错误
+    print(f"🔎in function query: {query}")
+    # ✅ 添加 `tbs=qdr:s` 强制 Google 返回最新结果
+    url = f"https://www.googleapis.com/customsearch/v1?q={query}&key={API_KEY}&cx={SEARCH_ENGINE_ID}"
 
-    url = f"https://www.googleapis.com/customsearch/v1?q={query}&key={API_KEY}&cx={SEARCH_ENGINE_ID}&num={num_results}&random={random.randint(1000, 9999)}"
     response = requests.get(url)
 
-    if response.status_code == 200:
-        results = response.json().get("items", [])
-        job_list = []
+    job_descriptions = []
 
-        for item in results:
-            job_list.append({
-                "title": item.get("title"),
-                "link": item.get("link"),
-                "snippet": item.get("snippet")  # 简要描述
-            })
 
-        return job_list
+        # 将招聘标题作为职位描述（如果没有完整描述可用）
 
-    else:
-        return {"error": f"Failed to fetch data. Status code: {response.status_code}"}
+    results = response.json()
+    for item in results.get('items', []):
+        title = item.get('title', '')
+        link = item.get('link', '')
+        job_descriptions.append((title, link))
+
+    return job_descriptions
+
+
