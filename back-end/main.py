@@ -1,5 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from service.resume_parser import parse_resume
+from service.google_search import google_job_search
 import sqlite3
 import os
 # 创建 FastAPI 实例
@@ -50,3 +51,13 @@ def get_resumes():
 
     conn.close()
     return {"resumes": resumes}
+
+@app.get("/search_jobs/")
+def search_jobs(query: str):
+    """
+    API 端点：使用 Google Custom Search API 搜索招聘信息
+    :param query: 搜索关键字（例如 "Python Developer jobs in Canada"）
+    :return: 匹配的职位信息
+    """
+    results = google_job_search(query)
+    return {"jobs": results}
