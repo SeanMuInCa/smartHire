@@ -1,10 +1,23 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from service.resume_parser import parse_resume
 from service.google_search import google_job_search
 import sqlite3
 import os
+import time  # 添加时间戳防止缓存
+
+
 # 创建 FastAPI 实例
 app = FastAPI()
+
+# 允许前端跨域请求
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 @app.get("/")
 def read_root():
     return {"message": "Welcome to AI Recruitment Backend!"}
@@ -54,10 +67,7 @@ def get_resumes():
 
 @app.get("/search_jobs/")
 def search_jobs(query: str):
-    """
-    API 端点：使用 Google Custom Search API 搜索招聘信息
-    :param query: 搜索关键字（例如 "Python Developer jobs in Canada"）
-    :return: 匹配的职位信息
-    """
-    results = google_job_search(query)
+    """搜索职位信息，防止缓存"""
+    timestamp = time.time()  # 获取当前时间戳，防止 API 缓存
+    results = google_job_search(f"{query} {timestamp}")  # 传递时间戳
     return {"jobs": results}
