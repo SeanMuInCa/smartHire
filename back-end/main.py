@@ -1,9 +1,12 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from service.resume_parser import parse_resume
-
+import sqlite3
+import os
 # 创建 FastAPI 实例
 app = FastAPI()
-
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to AI Recruitment Backend!"}
 @app.post("/upload_resume/")
 async def upload_resume(file: UploadFile = File(...)):
     """
@@ -21,3 +24,29 @@ async def upload_resume(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Error parsing the file: {str(e)}")
 
     return {"parsed_resume": parsed_resume}
+
+# 获取数据库路径
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "./service/resumes.db")
+
+@app.get("/resumes/")
+def get_resumes():
+    """API 端点：获取所有已存储的简历"""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id, name, email, phone, education, skills FROM resumes")
+    resumes = [
+        {
+            "id": row[0],
+            "name": row[1],
+            "email": row[2],
+            "phone": row[3],
+            "education": row[4].split("; "),  # 转换回列表
+            "skills": row[5].split("; ")  # 转换回列表
+        }
+        for row in cursor.fetchall()
+    ]
+
+    conn.close()
+    return {"resumes": resumes}

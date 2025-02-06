@@ -106,4 +106,3 @@ def parse_resume(content: bytes, filename: str):
 
     save_to_db(parsed_resume)  # 存入数据库
     return parsed_resume
-
