@@ -9,12 +9,11 @@ def extract_text_from_txt(content: bytes):
     return content.decode("utf-8").strip()
 
 def extract_name(text):
-    """使用 NLP 提取姓名（基于文本开头）"""
-    doc = nlp(text)
-    for ent in doc.ents:
-        if ent.label_ == "PERSON":  # 识别人名
-            return ent.text
-    return "N/A"
+    """使用正则表达式匹配姓名"""
+    name_pattern = re.compile(r"(?i)^\s*Name:\s*([A-Z][a-z]+(?:\s[A-Z][a-z]+)*)", re.MULTILINE)
+    match = name_pattern.search(text)
+    return match.group(1).strip() if match else "N/A"
+
 
 def extract_email(text):
     """提取邮箱"""
@@ -28,12 +27,22 @@ def extract_phone(text):
     match = phone_pattern.search(text)
     return match.group(0) if match else "N/A"
 
+
 def extract_education(text):
-    """自动提取教育背景"""
-    education_keywords = ["Bachelor", "Master", "PhD", "BSc", "MSc", "BA", "MA", "BS", "MS", "Doctorate"]
-    doc = nlp(text)
-    education_list = [sent.text for sent in doc.sents if any(word in sent.text for word in education_keywords)]
-    return education_list if education_list else ["N/A"]
+    """使用正则表达式匹配教育背景"""
+    education_pattern = re.compile(r"(?i)Education:\s*([\s\S]+?)(?=\n(?:Skills?:|\Z))", re.MULTILINE)
+    match = education_pattern.search(text)
+
+    if match:
+        education_text = match.group(1)
+
+        # 以换行、逗号、分号分割教育信息
+        education_list = re.split(r"[\n;,]+", education_text)
+        education_list = [edu.strip().lstrip("-").strip() for edu in education_list if edu.strip()]
+
+        return education_list if education_list else ["N/A"]
+
+    return ["N/A"]
 
 
 def extract_skills(text):
