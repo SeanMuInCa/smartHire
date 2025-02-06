@@ -1,35 +1,43 @@
 
-import requests
-import urllib.parse  # 进行 URL 编码
+
 
 # Google Custom Search API 信息
 API_KEY = "AIzaSyDOtzEyd61389p6dPPa4unViH8e-C9TbSs"
 SEARCH_ENGINE_ID = "33cb1045575a2475e"
 
+import requests
+import urllib.parse
+
+
+
+
 def google_job_search(query, num_results=5):
-    """
-    使用 Google Custom Search API 搜索职位信息
-    :param query: 用户输入的查询字符串 (例如 "Python Developer jobs in Canada")
-    :param num_results: 需要返回的结果数量
-    :return: 匹配的职位信息列表
-    """
-    print(f"🔎in function query: {query}")
-    # ✅ 添加 `tbs=qdr:s` 强制 Google 返回最新结果
-    url = f"https://www.googleapis.com/customsearch/v1?q={query}&key={API_KEY}&cx={SEARCH_ENGINE_ID}"
+    """使用 Google Custom Search API 搜索具体职位"""
+    query = urllib.parse.quote(f"{query} ")  # ✅ 限制在 Indeed 但放宽关键词
+
+    url = f"https://www.googleapis.com/customsearch/v1?q={query}&key={API_KEY}&cx={SEARCH_ENGINE_ID}&num={num_results}&tbs=qdr:m"  # ✅ tbs=qdr:w 让 Google 只返回最近 1 周的岗位
 
     response = requests.get(url)
 
-    job_descriptions = []
+    print(f"🔍 [DEBUG] Google API 请求 URL: {url}")  # ✅ Debug 请求的 URL
+    print(f"🔍 [DEBUG] Google API 返回的原始数据: {response.text}")  # ✅ Debug Google 返回的 JSON
 
+    if response.status_code == 200:
+        try:
+            json_data = response.json()
+            if "items" not in json_data:
+                return {"error": "Google API 返回了空搜索结果"}
+            results = json_data.get("items", [])
 
-        # 将招聘标题作为职位描述（如果没有完整描述可用）
+            # ✅ 保留所有搜索结果，确保不会过滤掉具体岗位
+            job_list = [
+                {"title": item.get("title"), "link": item.get("link"), "snippet": item.get("snippet")}
+                for item in results
+            ]
 
-    results = response.json()
-    for item in results.get('items', []):
-        title = item.get('title', '')
-        link = item.get('link', '')
-        job_descriptions.append((title, link))
+            return job_list if job_list else {"error": "未找到具体的职位信息"}
 
-    return job_descriptions
-
-
+        except requests.exceptions.JSONDecodeError:
+            return {"error": "无法解析 Google API 返回的数据"}
+    else:
+        return {"error": f"Google API 请求失败，状态码: {response.status_code}"}

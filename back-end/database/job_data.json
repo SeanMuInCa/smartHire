@@ -1,0 +1,229 @@
+
+[
+    {
+        "job_title": "Machine Learning Engineer",
+        "employment_type": "Full-time, Remote",
+        "pay_rate": {
+            "base": 55,
+            "currency": "USD",
+            "bonus": "Available for high-performance contributions"
+        },
+        "location": "San Francisco, CA",
+        "work_schedule": {
+            "min_hours_per_week": 40,
+            "max_hours_per_week": 50,
+            "flexible": false
+        },
+        "job_description": "Seeking a Machine Learning Engineer to build and optimize AI models for automated analytics.",
+        "responsibilities": [
+            "Develop and optimize machine learning models",
+            "Collaborate with data scientists to enhance AI performance",
+            "Implement scalable ML pipelines",
+            "Deploy models to cloud environments (AWS, Azure, GCP)"
+        ],
+        "required_skills": [
+            "Python",
+            "TensorFlow",
+            "PyTorch",
+            "SQL",
+            "AWS"
+        ],
+        "degree_requirement": "Master's or PhD in Computer Science, AI, or related field",
+        "language_requirement": "Fluent in English",
+        "key_qualifications": [
+            "3+ years of experience in ML engineering",
+            "Strong understanding of deep learning and reinforcement learning",
+            "Experience with cloud computing"
+        ],
+        "benefits": [
+            "Stock options",
+            "Health insurance",
+            "Flexible PTO",
+            "Remote work option"
+        ],
+        "application_process": {
+            "assessment_required": true,
+            "performance_based_project_allocation": true
+        }
+    },
+    {
+        "job_title": "Software Engineer - Backend (Django)",
+        "employment_type": "Full-time, On-site",
+        "pay_rate": {
+            "base": 45,
+            "currency": "USD",
+            "bonus": "Performance-based bonuses"
+        },
+        "location": "New York, NY",
+        "work_schedule": {
+            "min_hours_per_week": 40,
+            "max_hours_per_week": 45,
+            "flexible": false
+        },
+        "job_description": "Hiring an experienced backend engineer to work with Django and PostgreSQL to build high-performance APIs.",
+        "responsibilities": [
+            "Develop and maintain backend services in Django",
+            "Optimize PostgreSQL database queries",
+            "Implement RESTful APIs",
+            "Ensure application security and scalability"
+        ],
+        "required_skills": [
+            "Python",
+            "Django",
+            "PostgreSQL",
+            "Docker",
+            "Redis"
+        ],
+        "degree_requirement": "Bachelor's in Computer Science or related field",
+        "language_requirement": "Fluent in English",
+        "key_qualifications": [
+            "2+ years experience in backend development",
+            "Strong understanding of database optimization",
+            "Experience with API development"
+        ],
+        "benefits": [
+            "401k matching",
+            "Company-sponsored lunches",
+            "Gym membership reimbursement"
+        ],
+        "application_process": {
+            "assessment_required": false,
+            "technical_interview": true
+        }
+    },
+    {
+        "job_title": "Front-End Developer (React)",
+        "employment_type": "Part-time, Remote",
+        "pay_rate": {
+            "base": 38,
+            "currency": "USD",
+            "bonus": "Referral bonuses available"
+        },
+        "location": "Toronto, ON",
+        "work_schedule": {
+            "min_hours_per_week": 20,
+            "max_hours_per_week": 30,
+            "flexible": true
+        },
+        "job_description": "We are looking for a React.js developer to build dynamic and responsive front-end applications.",
+        "responsibilities": [
+            "Develop front-end UI components using React.js",
+            "Optimize web performance",
+            "Collaborate with designers and backend engineers",
+            "Ensure cross-browser compatibility"
+        ],
+        "required_skills": [
+            "JavaScript",
+            "React.js",
+            "CSS",
+            "HTML",
+            "TypeScript"
+        ],
+        "degree_requirement": "Bachelor’s degree preferred but not required",
+        "language_requirement": "Fluent in English",
+        "key_qualifications": [
+            "Experience with React Hooks and Redux",
+            "Familiarity with RESTful APIs",
+            "Knowledge of UI/UX best practices"
+        ],
+        "benefits": [
+            "Flexible working hours",
+            "Remote work",
+            "Learning stipend"
+        ],
+        "application_process": {
+            "assessment_required": true,
+            "technical_interview": true
+        }
+    },
+    {
+        "job_title": "Embedded Systems Engineer",
+        "employment_type": "Contract",
+        "pay_rate": {
+            "base": 50,
+            "currency": "USD",
+            "bonus": "Contract extension based on performance"
+        },
+        "location": "Austin, TX",
+        "work_schedule": {
+            "min_hours_per_week": 30,
+            "max_hours_per_week": 40,
+            "flexible": false
+        },
+        "job_description": "Looking for an embedded software engineer to develop firmware for IoT devices.",
+        "responsibilities": [
+            "Develop firmware for embedded devices",
+            "Optimize real-time processing",
+            "Integrate hardware with software components",
+            "Test and debug embedded systems"
+        ],
+        "required_skills": [
+            "C",
+            "C++",
+            "RTOS",
+            "Embedded Linux",
+            "Microcontrollers"
+        ],
+        "degree_requirement": "Bachelor’s in Electrical Engineering, Computer Engineering, or related field",
+        "language_requirement": "Fluent in English",
+        "key_qualifications": [
+            "Experience in real-time embedded systems",
+            "Understanding of hardware-software integration",
+            "Ability to write efficient C/C++ code"
+        ],
+        "benefits": [
+            "Competitive contract rates",
+            "Work with cutting-edge IoT technology",
+            "Potential for full-time role"
+        ],
+        "application_process": {
+            "assessment_required": false,
+            "technical_interview": true
+        }
+    },
+    {
+        "job_title": "Data Engineer (Big Data & Cloud)",
+        "employment_type": "Full-time, Hybrid",
+        "pay_rate": {
+            "base": 60,
+            "currency": "USD",
+            "bonus": "Stock options available"
+        },
+        "location": "Seattle, WA",
+        "work_schedule": {
+            "min_hours_per_week": 40,
+            "max_hours_per_week": 50,
+            "flexible": false
+        },
+        "job_description": "Join our data engineering team to design scalable data pipelines for real-time analytics.",
+        "responsibilities": [
+            "Develop scalable data pipelines",
+            "Work with cloud-based data solutions (AWS, GCP, Azure)",
+            "Optimize data processing for performance and reliability",
+            "Collaborate with data scientists and analysts"
+        ],
+        "required_skills": [
+            "Python",
+            "SQL",
+            "Spark",
+            "AWS",
+            "Kafka"
+        ],
+        "degree_requirement": "Master’s in Data Engineering, Computer Science, or related field",
+        "language_requirement": "Fluent in English",
+        "key_qualifications": [
+            "Experience with distributed data processing",
+            "Familiarity with ETL workflows",
+            "Strong cloud computing knowledge"
+        ],
+        "benefits": [
+            "401k",
+            "Remote-friendly",
+            "Learning & development budget"
+        ],
+        "application_process": {
+            "assessment_required": true,
+            "technical_interview": true
+        }
+    }
+]

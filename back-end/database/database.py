@@ -1,28 +1,31 @@
 import sqlite3
 
-from service.resume_parser import DB_PATH
+# 连接数据库（如果文件不存在，则创建）
+conn = sqlite3.connect("jobs.db")
+cursor = conn.cursor()
 
+# 创建 `jobs` 表
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS jobs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        job_title TEXT,
+        employment_type TEXT,
+        pay_rate REAL,
+        currency TEXT,
+        location TEXT,
+        work_schedule TEXT,
+        job_description TEXT,
+        required_skills TEXT,
+        degree_requirement TEXT,
+        language_requirement TEXT,
+        key_qualifications TEXT,
+        benefits TEXT,
+        application_process TEXT
+    )
+''')
 
-def init_db():
-    """初始化 SQLite 数据库，创建 resumes 表"""
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+# 提交更改并关闭连接
+conn.commit()
+conn.close()
 
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS resumes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            email TEXT,
-            phone TEXT,
-            education TEXT,
-            skills TEXT
-        )
-    ''')
-
-    conn.commit()
-    conn.close()
-    print("Database initialized successfully!")
-
-
-# 运行一次，确保表存在
-init_db()
+print("✅ 数据库 `jobs.db` 已创建，并初始化 `jobs` 表！")

@@ -72,3 +72,37 @@ def search_jobs(query: str):
 
     results = google_job_search(query)  # 传递 `query` 直接调用 API
     return {'jobs':results}
+
+
+@app.get("/jobs/")
+def get_jobs():
+    """从数据库获取所有职位数据"""
+    conn = sqlite3.connect("./database/jobs.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM jobs")
+    jobs = cursor.fetchall()
+    conn.close()
+
+    # 格式化 JSON 响应
+    job_list = [
+        {
+            "id": job[0],
+            "job_title": job[1],
+            "employment_type": job[2],
+            "pay_rate": job[3],
+            "currency": job[4],
+            "location": job[5],
+            "work_schedule": job[6],
+            "job_description": job[7],
+            "required_skills": job[8].split(", "),
+            "degree_requirement": job[9],
+            "language_requirement": job[10],
+            "key_qualifications": job[11].split(", "),
+            "benefits": job[12].split(", "),
+            "application_process": job[13]
+        }
+        for job in jobs
+    ]
+
+    return {"jobs": job_list}
