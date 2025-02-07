@@ -2,6 +2,7 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from service.resume_parser import parse_resume
 from service.google_search import google_job_search
+from service.embedding import match_jobs_with_faiss
 import sqlite3
 import os
 import time  # 添加时间戳防止缓存
@@ -21,24 +22,51 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     return {"message": "Welcome to AI Recruitment Backend!"}
+# @app.post("/upload_resume/")
+# async def upload_resume(file: UploadFile = File(...)):
+#     """
+#     解析 TXT 简历文件，提取姓名、邮箱、电话、教育背景、技能等信息。
+#     """
+#     # 检查文件扩展名是否为 .txt
+#     if not file.filename.endswith(".txt"):
+#         raise HTTPException(status_code=400, detail="Only .txt files are supported")
+#
+#     # 读取上传的文件内容
+#     try:
+#         content = await file.read()
+#         parsed_resume = parse_resume(content, file.filename)  # 调用解析函数
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Error parsing the file: {str(e)}")
+#
+#     return {"parsed_resume": parsed_resume}
 @app.post("/upload_resume/")
 async def upload_resume(file: UploadFile = File(...)):
-    """
-    解析 TXT 简历文件，提取姓名、邮箱、电话、教育背景、技能等信息。
-    """
-    # 检查文件扩展名是否为 .txt
-    if not file.filename.endswith(".txt"):
-        raise HTTPException(status_code=400, detail="Only .txt files are supported")
+    """上传简历，解析并进行职位匹配"""
+    content = await file.read()
+    resume_text = parse_resume(content, file.filename)
 
-    # 读取上传的文件内容
-    try:
-        content = await file.read()
-        parsed_resume = parse_resume(content, file.filename)  # 调用解析函数
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error parsing the file: {str(e)}")
+    if isinstance(resume_text, dict):  # 错误处理
+        return resume_text
 
-    return {"parsed_resume": parsed_resume}
+    matched_jobs = match_jobs_with_faiss(resume_text, top_k=5)
 
+    # 查询数据库获取职位详细信息
+    conn = sqlite3.connect("database/jobs.db")
+    cursor = conn.cursor()
+    job_results = []
+    for job in matched_jobs:
+        cursor.execute("SELECT job_title, company, location FROM jobs WHERE id=?", (job["job_id"],))
+        job_data = cursor.fetchone()
+        if job_data:
+            job_results.append({
+                "title": job_data[0],
+                "company": job_data[1],
+                "location": job_data[2],
+                "similarity": round(job["similarity"], 3)
+            })
+
+    conn.close()
+    return {"matched_jobs": job_results}
 # 获取数据库路径
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "./service/resumes.db")

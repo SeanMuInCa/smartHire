@@ -16,7 +16,6 @@ def extract_name(text):
     match = name_pattern.search(text)
     return match.group(1).strip() if match else "N/A"
 
-
 def extract_email(text):
     """提取邮箱"""
     email_pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
@@ -28,7 +27,6 @@ def extract_phone(text):
     phone_pattern = re.compile(r"\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}")
     match = phone_pattern.search(text)
     return match.group(0) if match else "N/A"
-
 
 def extract_education(text):
     """使用正则表达式匹配教育背景"""
@@ -45,7 +43,6 @@ def extract_education(text):
         return education_list if education_list else ["N/A"]
 
     return ["N/A"]
-
 
 def extract_skills(text):
     """使用正则表达式从 'Skills:' 段落提取技能"""
@@ -65,14 +62,26 @@ def extract_skills(text):
 
     return ["N/A"]
 
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # 获取当前脚本的目录
-DB_PATH = os.path.join(BASE_DIR, "resumes.db")  # 数据库存储在当前目录
+# **确保 `resumes.db` 存储在 `database/` 目录**
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "database"))
+DB_PATH = os.path.join(BASE_DIR, "resumes.db")  # ✅ 修正数据库路径，指向 `back-end/database/resumes.db`
 
 def save_to_db(parsed_resume):
     """存储解析后的简历数据到 SQLite"""
-    conn = sqlite3.connect(DB_PATH)  # 使用绝对路径
+    conn = sqlite3.connect(DB_PATH)  # ✅ 连接 `back-end/database/resumes.db`
     cursor = conn.cursor()
+
+    # 创建 `resumes` 表（如果不存在）
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS resumes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            email TEXT,
+            phone TEXT,
+            education TEXT,
+            skills TEXT
+        )
+    ''')
 
     cursor.execute('''
         INSERT INTO resumes (name, email, phone, education, skills)
@@ -87,7 +96,7 @@ def save_to_db(parsed_resume):
 
     conn.commit()
     conn.close()
-    print("Resume saved to database!")
+    print("✅ Resume saved to database!")
 
 def parse_resume(content: bytes, filename: str):
     """解析 TXT 简历，提取信息并存入数据库"""
@@ -104,5 +113,5 @@ def parse_resume(content: bytes, filename: str):
         "skills": extract_skills(text),
     }
 
-    save_to_db(parsed_resume)  # 存入数据库
+    save_to_db(parsed_resume)  # ✅ 存入 `database/resumes.db`
     return parsed_resume
