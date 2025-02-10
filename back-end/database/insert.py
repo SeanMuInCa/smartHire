@@ -1,34 +1,66 @@
-import json
 import sqlite3
+import os
 
-# 读取 JSON 数据
-with open("job_data.json", "r", encoding="utf-8") as f:
-    job_list = json.load(f)  # ✅ job_list 是一个 "list"，里面有多个 "dict"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "jobs.db")
 
-def insert_jobs_to_db(jobs):
-    """批量插入职位数据到数据库"""
-    conn = sqlite3.connect("jobs.db")
+
+def insert_sample_jobs():
+    """插入示例职位数据"""
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    for job in jobs:  # ✅ 遍历列表，每个 job 是一个字典
-        cursor.execute('''
-            INSERT INTO jobs (
-                job_title, employment_type, pay_rate, currency, location, work_schedule,
-                job_description, required_skills, degree_requirement, language_requirement,
-                key_qualifications, benefits, application_process
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            job["job_title"], job["employment_type"], job["pay_rate"]["base"], job["pay_rate"]["currency"],
-            job["location"], json.dumps(job["work_schedule"]), job["job_description"],
-            ", ".join(job["required_skills"]), job["degree_requirement"], job["language_requirement"],
-            ", ".join(job["key_qualifications"]), ", ".join(job["benefits"]),
-            json.dumps(job["application_process"])
-        ))
+    sample_jobs = [
+        ("Software Developer - AI Trainer", "AI Solutions Inc.", "Remote",
+         "Train AI models by coding diverse problems and evaluating chatbot responses.",
+         "Python, JavaScript, C++, SQL, Machine Learning, Deep Learning"),
+
+        ("Machine Learning Engineer", "Google", "San Francisco, CA",
+         "Develop and optimize ML models for large-scale applications.",
+         "Python, TensorFlow, PyTorch, Deep Learning, NLP"),
+
+        ("Data Scientist", "Amazon", "Seattle, WA",
+         "Analyze customer behavior and optimize recommendation algorithms.",
+         "Python, SQL, Statistics, Big Data, AWS"),
+
+        ("AI Researcher", "OpenAI", "New York, NY",
+         "Work on cutting-edge research in Natural Language Processing (NLP).",
+         "Deep Learning, PyTorch, NLP, Transformers"),
+
+        ("Software Engineer", "Meta", "Menlo Park, CA",
+         "Develop scalable backend systems for AI-driven applications.",
+         "JavaScript, Node.js, React, SQL, AWS"),
+
+        ("Data Analyst", "Microsoft", "Redmond, WA",
+         "Process and analyze data to drive strategic business decisions.",
+         "SQL, Excel, Python, Power BI, Tableau"),
+
+        ("NLP Engineer", "AI Startups Inc.", "Boston, MA",
+         "Develop and fine-tune NLP models for chatbot interactions.",
+         "Python, Transformers, GPT-4, Text Classification"),
+
+        ("Computer Vision Engineer", "Tesla", "Palo Alto, CA",
+         "Enhance self-driving car AI through image processing.",
+         "Python, OpenCV, Deep Learning, TensorFlow, CNNs"),
+
+        ("Cybersecurity Analyst", "IBM", "Austin, TX",
+         "Monitor and prevent security threats using AI-enhanced analytics.",
+         "Network Security, Python, Ethical Hacking, SIEM, Cloud Security"),
+
+        ("Frontend Developer", "Spotify", "Remote",
+         "Develop and optimize UI components for an AI-powered music recommendation system.",
+         "React, TypeScript, CSS, Web Accessibility, Figma")
+    ]
+
+    cursor.executemany('''
+        INSERT INTO jobs (job_title, company, location, job_description, required_skills)
+        VALUES (?, ?, ?, ?, ?)
+    ''', sample_jobs)
 
     conn.commit()
     conn.close()
-    print(f"✅ {len(jobs)} 条职位数据已成功存入数据库！")
+    print("✅ 示例职位数据已插入！")
 
-# 插入所有职位
-insert_jobs_to_db(job_list)
+
+if __name__ == "__main__":
+    insert_sample_jobs()
