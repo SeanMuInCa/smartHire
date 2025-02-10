@@ -23,38 +23,26 @@ app.add_middleware(
 def read_root():
     return {"message": "Welcome to AI Recruitment Backend!"}
 
+
+# **确保 `resumes.db` 路径正确**
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "database"))
+DB_PATH = os.path.join(BASE_DIR, "resumes.db")
+
+
 @app.post("/upload_resume/")
 async def upload_resume(file: UploadFile = File(...)):
-    """上传简历，解析并进行职位匹配"""
+    """上传简历并存入数据库"""
     content = await file.read()
-    resume_text = parse_resume(content, file.filename)
+    parsed_resume = parse_resume(content, file.filename)
 
-    if isinstance(resume_text, dict):  # 错误处理
-        return resume_text
-
-    matched_jobs = match_jobs_with_faiss(resume_text, top_k=5)
-
-    # 查询数据库获取职位详细信息
-    conn = sqlite3.connect("database/jobs.db")
+    # 查询数据库是否成功存储
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    job_results = []
-    for job in matched_jobs:
-        cursor.execute("SELECT job_title, company, location FROM jobs WHERE id=?", (job["job_id"],))
-        job_data = cursor.fetchone()
-        if job_data:
-            job_results.append({
-                "title": job_data[0],
-                "company": job_data[1],
-                "location": job_data[2],
-                "similarity": round(job["similarity"], 3)
-            })
-
+    cursor.execute("SELECT * FROM resumes")
+    data = cursor.fetchall()
     conn.close()
-    return {"matched_jobs": job_results}
-# 获取数据库路径
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "./service/resumes.db")
 
+    return {"parsed_resume": parsed_resume, "db_data": data}
 @app.get("/resumes/")
 def get_resumes():
     """API 端点：获取所有已存储的简历"""

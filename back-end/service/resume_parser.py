@@ -6,9 +6,11 @@ import spacy
 # 加载 spaCy 预训练 NLP 模型（支持实体识别）
 nlp = spacy.load("en_core_web_sm")
 
+
 def extract_text_from_txt(content: bytes):
     """解析 TXT 简历"""
     return content.decode("utf-8").strip()
+
 
 def extract_name(text):
     """使用正则表达式匹配姓名"""
@@ -16,17 +18,20 @@ def extract_name(text):
     match = name_pattern.search(text)
     return match.group(1).strip() if match else "N/A"
 
+
 def extract_email(text):
     """提取邮箱"""
     email_pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
     match = email_pattern.search(text)
     return match.group(0) if match else "N/A"
 
+
 def extract_phone(text):
     """提取电话号码"""
     phone_pattern = re.compile(r"\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}")
     match = phone_pattern.search(text)
     return match.group(0) if match else "N/A"
+
 
 def extract_education(text):
     """使用正则表达式匹配教育背景"""
@@ -35,14 +40,12 @@ def extract_education(text):
 
     if match:
         education_text = match.group(1)
-
-        # 以换行、逗号、分号分割教育信息
         education_list = re.split(r"[\n;,]+", education_text)
         education_list = [edu.strip().lstrip("-").strip() for edu in education_list if edu.strip()]
-
         return education_list if education_list else ["N/A"]
 
     return ["N/A"]
+
 
 def extract_skills(text):
     """使用正则表达式从 'Skills:' 段落提取技能"""
@@ -50,24 +53,24 @@ def extract_skills(text):
     match = skills_pattern.search(text)
 
     if match:
-        # 提取技能部分文本
         skills_text = match.group(1)
-
-        # 以逗号、分号、换行、制表符等分隔技能
         skills_list = re.split(r"[,\n;\t]+", skills_text)
-
-        # 去除空白字符，并返回去重后的技能列表
         skills_list = [skill.strip() for skill in skills_list if skill.strip()]
         return list(set(skills_list)) if skills_list else ["N/A"]
 
     return ["N/A"]
 
+
 # **确保 `resumes.db` 存储在 `database/` 目录**
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "database"))
-DB_PATH = os.path.join(BASE_DIR, "resumes.db")  # ✅ 修正数据库路径，指向 `back-end/database/resumes.db`
+DB_PATH = os.path.join(BASE_DIR, "resumes.db")  # ✅ 让 `resumes.db` 存储在 `back-end/database/`
+
 
 def save_to_db(parsed_resume):
     """存储解析后的简历数据到 SQLite"""
+    if not os.path.exists(BASE_DIR):
+        os.makedirs(BASE_DIR)  # **如果 `database/` 目录不存在，则创建**
+
     conn = sqlite3.connect(DB_PATH)  # ✅ 连接 `back-end/database/resumes.db`
     cursor = conn.cursor()
 
@@ -96,7 +99,8 @@ def save_to_db(parsed_resume):
 
     conn.commit()
     conn.close()
-    print("✅ Resume saved to database!")
+    print(f"✅ Resume saved to database: {DB_PATH}")
+
 
 def parse_resume(content: bytes, filename: str):
     """解析 TXT 简历，提取信息并存入数据库"""
