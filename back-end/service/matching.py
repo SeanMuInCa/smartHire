@@ -42,7 +42,7 @@ def match_jobs_with_faiss(resume_text, top_k=5):
 
     for i, score in zip(indices[0], similarities[0]):
         job_id = int(job_ids[i])
-        cursor.execute("SELECT job_title, company, location FROM jobs WHERE id=?", (job_id,))
+        cursor.execute("SELECT job_title, company_name, location FROM jobs WHERE id=?", (job_id,))
         job_data = cursor.fetchone()
 
         if job_data:
