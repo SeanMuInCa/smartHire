@@ -7,7 +7,7 @@ from sentence_transformers import SentenceTransformer
 # **手动添加 `database/` 目录到 Python 路径**
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "database")))
 
-from database import get_jobs  # ✅ 确保 `get_jobs` 方法存在
+from database import get_jobs
 
 # **FAISS 和数据库路径**
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "database"))
