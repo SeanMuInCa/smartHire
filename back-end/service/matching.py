@@ -48,7 +48,18 @@ def match_jobs_with_faiss(resume_text, top_k=5):
                 "location": job_details["location"],
                 "similarity": float(sim)
             })
+    for i, sim in zip(indices[0], similarities[0]):
+        job_id = int(job_ids[i])
+        job_details = get_job_details(job_id)
 
+        if job_details:
+            print(f"🔍 find position: {job_details['job_title']} | similarity: {sim}")
+            matched_jobs.append({
+                "title": job_details["job_title"],
+                "company": job_details["company"],
+                "location": job_details["location"],
+                "similarity": float(sim)
+            })
     return matched_jobs
 
 
@@ -68,3 +79,4 @@ def get_job_details(job_id):
     if row:
         return {"job_title": row[0], "company": row[1], "location": row[2]}
     return None  # ❌ 如果找不到职位，返回 `None`
+
