@@ -14,8 +14,12 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "databa
 FAISS_INDEX_PATH = os.path.join(BASE_DIR, "job_embeddings.faiss")
 JOB_IDS_PATH = os.path.join(BASE_DIR, "job_ids.npy")
 
-# 加载 Sentence-BERT
-model = SentenceTransformer("all-MiniLM-L6-v2")
+# 确保所有代码使用相同的模型
+model = SentenceTransformer("all-mpnet-base-v2")  # ✅ 确保 `matching.py` 也用这个
+
+# **打印嵌入向量维度**
+test_embedding = model.encode(["test"], convert_to_numpy=True)
+print("🔍 嵌入向量维度:", test_embedding.shape[1])  # ✅ 打印 FAISS 需要的维度
 
 def normalize(vecs):
     """归一化向量，使其适用于 Cosine Similarity"""
@@ -25,6 +29,7 @@ def normalize(vecs):
 def build_faiss_index():
     """从数据库加载职位描述，并构建 FAISS 余弦相似度索引"""
     jobs = get_jobs()
+    jobs = jobs[:1000]
     if not jobs:
         print("❌ 没有找到职位数据，请检查 jobs.db 是否已填充数据")
         return
@@ -34,11 +39,11 @@ def build_faiss_index():
 
     # 计算职位描述的嵌入向量
     job_embeddings = model.encode(job_descriptions, convert_to_numpy=True)
-    job_embeddings = normalize(job_embeddings)  # ✅ 归一化向量，确保 Cosine Similarity 正确计算
+    job_embeddings = normalize(job_embeddings)  # ✅ 只归一化一次
 
     # **创建 FAISS 余弦相似度索引**
     dimension = job_embeddings.shape[1]
-    index = faiss.IndexFlatIP(dimension)  # ✅ 使用 Inner Product 代替 L2
+    index = faiss.IndexFlatIP(dimension)  # ✅ 确保维度匹配
     index.add(job_embeddings)
 
     # 存储索引和职位 ID
