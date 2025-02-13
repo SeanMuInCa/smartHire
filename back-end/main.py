@@ -1,19 +1,29 @@
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, File, UploadFile
 import os
 import sqlite3
-from fastapi import FastAPI, File, UploadFile
 from service.resume_parser import parse_resume
 from service.matching import match_jobs_with_faiss  # ✅ AI 语义匹配
 
 app = FastAPI()
 
-# **确保 `database/` 目录正确**
+# ✅ **CORS 允许前端访问**
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # 允许所有来源（可改为 ["http://localhost:5173"]）
+    allow_credentials=True,
+    allow_methods=["*"],  # 允许所有方法（POST、GET 等）
+    allow_headers=["*"],  # 允许所有 Headers
+)
+
+# **数据库路径**
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "database"))
 RESUMES_DB_PATH = os.path.join(BASE_DIR, "resumes.db")
 JOBS_DB_PATH = os.path.join(BASE_DIR, "jobs.db")
 
 @app.get("/")
 def read_root():
-    """默认路由，测试服务器是否运行"""
+    """测试服务器是否运行"""
     return {"message": "Welcome to AI Recruitment Backend!"}
 
 @app.post("/upload_resume/")
