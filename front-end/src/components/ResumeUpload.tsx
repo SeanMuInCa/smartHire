@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { setResume, setParsedData, setMatchedJobs } from "../store/resumeUploadSlice";
+import { setParsedData, setMatchedJobs } from "../store/resumeUploadSlice";
 import axiosService from "../services";
 import { useState } from "react";
 import { RootState } from "../store";
