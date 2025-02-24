@@ -3,10 +3,12 @@ import { setParsedData, setMatchedJobs } from "../store/resumeUploadSlice";
 import axiosService from "../services";
 import { useState } from "react";
 import { RootState } from "../store";
+import Loading from "./Loading";
 
 const ResumeUpload = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
+  const [analysing, setAnalysing] = useState(false);
   const parsedData = useSelector((state: RootState) => state.resumeUpload.parsedData);
   const matchedJobs = useSelector((state: RootState) => state.resumeUpload.matchedJobs);
 
@@ -31,9 +33,15 @@ const ResumeUpload = () => {
       console.error("Upload failed", error);
     } finally {
       setLoading(false);
+      setAnalysing(true);
+      PretentAnalyse()
     }
   };
-
+  const PretentAnalyse = () => {
+      setTimeout(()=>{
+        setAnalysing(false)
+      },5000)
+  };
   return (
     <div className="p-6 bg-white shadow-md rounded-lg flex">
 
@@ -53,8 +61,8 @@ const ResumeUpload = () => {
           </div>
         )}
       </div>
-
-      {matchedJobs.length > 0 && (
+      {analysing && <Loading />}
+      {(matchedJobs.length > 0 && !analysing) && (
         <div className="mt-6 mx-6">
           <h3 className="text-lg font-semibold">Matched Jobs</h3>
           <ul>
