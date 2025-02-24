@@ -13,47 +13,49 @@ const ResumeUpload = () => {
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) return;
     const file = event.target.files[0];
-  
+
     setLoading(true);
     try {
       // ✅ 使用 FormData 处理文件上传
       const formData = new FormData();
       formData.append("file", file); // 确保后端 `UploadFile` 能正确解析
-  
+
       const response = await axiosService.post("/upload_resume/", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-  
+
       dispatch(setParsedData(response.data.parsed_resume));
       dispatch(setMatchedJobs(response.data.matched_jobs));
-  
+
     } catch (error) {
       console.error("Upload failed", error);
     } finally {
       setLoading(false);
     }
   };
-  
+
   return (
-    <div className="p-6 bg-white shadow-md rounded-lg">
+    <div className="p-6 bg-white shadow-md rounded-lg flex">
 
-      <h2 className="text-xl font-semibold">Upload Resume</h2>
-      <input type="file" accept=".txt" onChange={handleUpload} className="mt-4" />
-      {loading && <p className="text-gray-500 mt-2">Uploading...</p>}
+      <div className="mr-5 border-r-4">
+        <h2 className="text-xl font-semibold">Upload Resume</h2>
+        <input type="file" accept=".txt" onChange={handleUpload} className="mt-4" />
+        {loading && <p className="text-gray-500 mt-2">Uploading...</p>}
 
-      {parsedData && (
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold">Parsed Resume</h3>
-          <p><strong>Name:</strong> {parsedData.name}</p>
-          <p><strong>Email:</strong> {parsedData.email}</p>
-          <p><strong>Phone:</strong> {parsedData.phone}</p>
-          <p><strong>Education:</strong> {parsedData.education?.join(", ")}</p>
-          <p><strong>Skills:</strong> {parsedData.skills?.join(", ")}</p>
-        </div>
-      )}
+        {parsedData && (
+          <div className="mt-6 mx-6">
+            <h3 className="text-lg font-semibold">Parsed Resume</h3>
+            <p><strong>Name:</strong> {parsedData.name}</p>
+            <p><strong>Email:</strong> {parsedData.email}</p>
+            <p><strong>Phone:</strong> {parsedData.phone}</p>
+            <p><strong>Education:</strong> {parsedData.education?.join(", ")}</p>
+            <p><strong>Skills:</strong> {parsedData.skills?.join(", ")}</p>
+          </div>
+        )}
+      </div>
 
       {matchedJobs.length > 0 && (
-        <div className="mt-6">
+        <div className="mt-6 mx-6">
           <h3 className="text-lg font-semibold">Matched Jobs</h3>
           <ul>
             {matchedJobs.map((job, index) => (
