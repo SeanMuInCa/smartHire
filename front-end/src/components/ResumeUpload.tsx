@@ -4,6 +4,7 @@ import axiosService from "../services";
 import { useState } from "react";
 import { RootState } from "../store";
 import Loading from "./Loading";
+import { dialogOverlayTheme } from "@material-tailwind/react";
 
 const ResumeUpload = () => {
   const dispatch = useDispatch();
@@ -38,13 +39,15 @@ const ResumeUpload = () => {
     }
   };
   const PretentAnalyse = () => {
-      setTimeout(()=>{
-        setAnalysing(false)
-      },5000)
+    setTimeout(() => {
+      setAnalysing(false)
+    }, 5000)
   };
   return (
-    <div className="p-6 bg-white shadow-md rounded-lg flex">
-
+    <div className="p-6 bg-white shadow-md rounded-lg flex relative">
+      {analysing && (<div className="absolute left-1/2 bottom-1/2">
+        <Loading />
+      </div>)}
       <div className="mr-5 border-r-4">
         <h2 className="text-xl font-semibold">Upload Resume</h2>
         <input type="file" accept=".txt" onChange={handleUpload} className="mt-4" />
@@ -61,7 +64,7 @@ const ResumeUpload = () => {
           </div>
         )}
       </div>
-      {analysing && <Loading />}
+
       {(matchedJobs.length > 0 && !analysing) && (
         <div className="mt-6 mx-6">
           <h3 className="text-lg font-semibold">Matched Jobs</h3>
