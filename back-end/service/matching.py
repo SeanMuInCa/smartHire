@@ -60,7 +60,9 @@ def match_jobs_with_faiss(resume_text, top_k=5):
                 "location": job_details["location"],
                 "similarity": float(sim)
             })
-    return matched_jobs
+    if len(matched_jobs) >= top_k:
+        return matched_jobs[:top_k]
+    else: return matched_jobs
 
 
 def get_job_details(job_id):
