@@ -4,7 +4,7 @@ import axiosService from "../services";
 import { useState } from "react";
 import { RootState } from "../store";
 import Loading from "./Loading";
-import { dialogOverlayTheme } from "@material-tailwind/react";
+
 
 const ResumeUpload = () => {
   const dispatch = useDispatch();
