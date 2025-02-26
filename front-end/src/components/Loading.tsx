@@ -8,7 +8,7 @@ const Loading: React.FC<Iprops> = () => {
   return (
     <div className='flex flex-col justify-center items-center	'>
       <Spinner className="h-24 w-24" color="warning"/>
-      <p>Matching Jobs</p>
+      
     </div>
   )
 }
