@@ -13,41 +13,56 @@ def extract_text_from_txt(content: bytes):
     return content.decode("utf-8").strip()
 
 
+
+
 def extract_text_from_pdf(content: bytes):
-    """解析 PDF 简历"""
+    """解析 PDF 简历，去除换行，确保 `Name:` 关键字后内容连贯"""
     temp_path = "temp_resume.pdf"
 
-    # ✅ **写入临时 PDF 文件**
+    # ✅ **写入临时 PDF**
     with open(temp_path, "wb") as f:
         f.write(content)
 
-    # ✅ **使用 `with` 确保文件正确关闭**
+    text = []
     with fitz.open(temp_path) as doc:
-        text = "\n".join([page.get_text("text") for page in doc])
+        for page in doc:
+            text.append(page.get_text("text").strip())  # ✅ 去掉前后空格
 
-    os.remove(temp_path)  # ✅ 关闭后删除 PDF 文件
-    return text.strip()
+    os.remove(temp_path)  # ✅ 解析后删除 PDF
+
+    clean_text = " ".join(text)  # ✅ **合并所有页文本，确保 `Name:` 关键字后内容不换行**
+    return clean_text
 
 
-def extract_name(text):
-    """优先从 'Name:' 提取姓名，否则使用 spaCy 或正则匹配第一行"""
+def extract_name(text, file_type="txt"):
+    """根据文件类型（TXT 或 PDF）选择不同的姓名提取方法"""
 
-    # ✅ 1️⃣ **检查 `Name:` 关键字**
-    name_match = re.search(r"(?i)\bName\s*:\s*([A-Z][a-z]+(?:\s[A-Z][a-z]+)*)", text)
+    # ✅ **先尝试匹配 `Name:` 后面的人名**
+    name_match = re.search(r"(?i)\bName\s*:\s*([^\n,]*)", text)
     if name_match:
-        return name_match.group(1).strip()  # ✅ **确保只获取 `Name:` 后面的文本**
+        extracted_name = name_match.group(1).strip()
 
-    # ✅ 2️⃣ **尝试用 spaCy 识别人名**
-    doc = nlp(text)
-    for ent in doc.ents:
-        if ent.label_ == "PERSON":
-            return ent.text.strip()
+        # ✅ **避免误匹配 Email**
+        if "@" not in extracted_name and len(extracted_name.split()) <= 4:
+            return extracted_name
 
-    # ✅ 3️⃣ **如果 `spaCy` 也失败，尝试匹配第一行可能的姓名**
-    first_line = text.strip().split("\n")[0]
-    first_name_match = re.search(r"([A-Z][a-z]+(?:\s[A-Z][a-z]+)*)", first_line)
+    # ✅ **TXT 解析：尝试匹配第一行**
+    if file_type == "txt":
+        first_line = text.strip().split("\n")[0]
+        first_name_match = re.search(r"([A-Z][a-z]+(?:\s[A-Z][a-z]+)*)", first_line)
+        if first_name_match:
+            return first_name_match.group(1).strip()
 
-    return first_name_match.group(1).strip() if first_name_match else "N/A"
+    # ✅ **PDF 解析：使用 spaCy 提取人名**
+    if file_type == "pdf":
+        text = text.replace("\n", " ")  # ✅ 去掉换行符
+        doc = nlp(text)
+
+        for ent in doc.ents:
+            if ent.label_ == "PERSON":
+                return ent.text.strip()
+
+    return "N/A"
 
 
 def extract_email(text):
@@ -125,16 +140,18 @@ def save_to_db(parsed_resume):
 
 
 def parse_resume(content: bytes, filename: str):
-    """解析简历（支持 TXT & PDF）"""
+    """解析 TXT 和 PDF 简历"""
     if filename.endswith(".txt"):
         text = extract_text_from_txt(content)
+        file_type = "txt"
     elif filename.endswith(".pdf"):
         text = extract_text_from_pdf(content)
+        file_type = "pdf"
     else:
         return {"error": "Only .txt and .pdf files are supported"}
 
     parsed_resume = {
-        "name": extract_name(text),
+        "name": extract_name(text, file_type),  # ✅ **按不同文件类型解析姓名**
         "email": extract_email(text),
         "phone": extract_phone(text),
         "education": extract_education(text),
