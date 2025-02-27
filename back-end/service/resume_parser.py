@@ -1,16 +1,32 @@
 import re
 import sqlite3
 import os
+import fitz  # ✅ PyMuPDF 用于解析 PDF
 import spacy
 
 # 加载 spaCy 预训练 NLP 模型（支持实体识别）
 nlp = spacy.load("en_core_web_sm")
 
-
 def extract_text_from_txt(content: bytes):
     """解析 TXT 简历"""
     return content.decode("utf-8").strip()
 
+def extract_text_from_pdf(content: bytes):
+    """解析 PDF 简历"""
+    temp_path = "temp_resume.pdf"
+
+    # ✅ **写入临时 PDF 文件**
+    with open(temp_path, "wb") as f:
+        f.write(content)
+
+    # ✅ **使用 `with` 语句，确保 PDF 文件被正确关闭**
+    with fitz.open(temp_path) as doc:
+        text = "\n".join([page.get_text("text") for page in doc])  # 逐页提取文本
+
+    # ✅ **文件关闭后再删除**
+    os.remove(temp_path)
+
+    return text.strip()
 
 def extract_name(text):
     """使用正则表达式匹配姓名"""
@@ -18,13 +34,11 @@ def extract_name(text):
     match = name_pattern.search(text)
     return match.group(1).strip() if match else "N/A"
 
-
 def extract_email(text):
     """提取邮箱"""
     email_pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
     match = email_pattern.search(text)
     return match.group(0) if match else "N/A"
-
 
 def extract_phone(text):
     """提取电话号码"""
@@ -32,49 +46,40 @@ def extract_phone(text):
     match = phone_pattern.search(text)
     return match.group(0) if match else "N/A"
 
-
 def extract_education(text):
     """使用正则表达式匹配教育背景"""
     education_pattern = re.compile(r"(?i)Education:\s*([\s\S]+?)(?=\n(?:Skills?:|\Z))", re.MULTILINE)
     match = education_pattern.search(text)
-
     if match:
         education_text = match.group(1)
         education_list = re.split(r"[\n;,]+", education_text)
         education_list = [edu.strip().lstrip("-").strip() for edu in education_list if edu.strip()]
         return education_list if education_list else ["N/A"]
-
     return ["N/A"]
-
 
 def extract_skills(text):
     """使用正则表达式从 'Skills:' 段落提取技能"""
     skills_pattern = re.compile(r"(?i)Skills?:\s*([\s\S]+?)(?:\n\n|\Z)")
     match = skills_pattern.search(text)
-
     if match:
         skills_text = match.group(1)
         skills_list = re.split(r"[,\n;\t]+", skills_text)
         skills_list = [skill.strip() for skill in skills_list if skill.strip()]
         return list(set(skills_list)) if skills_list else ["N/A"]
-
     return ["N/A"]
-
 
 # **确保 `resumes.db` 存储在 `database/` 目录**
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "database"))
-DB_PATH = os.path.join(BASE_DIR, "resumes.db")  # ✅ 让 `resumes.db` 存储在 `back-end/database/`
-
+DB_PATH = os.path.join(BASE_DIR, "resumes.db")
 
 def save_to_db(parsed_resume):
     """存储解析后的简历数据到 SQLite"""
     if not os.path.exists(BASE_DIR):
-        os.makedirs(BASE_DIR)  # **如果 `database/` 目录不存在，则创建**
+        os.makedirs(BASE_DIR)
 
-    conn = sqlite3.connect(DB_PATH)  # ✅ 连接 `back-end/database/resumes.db`
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    # 创建 `resumes` 表（如果不存在）
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS resumes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -101,13 +106,14 @@ def save_to_db(parsed_resume):
     conn.close()
     print(f"✅ Resume saved to database: {DB_PATH}")
 
-
 def parse_resume(content: bytes, filename: str):
-    """解析 TXT 简历，提取信息并存入数据库"""
-    if not filename.endswith(".txt"):
-        return {"error": "Only .txt files are supported"}
-
-    text = extract_text_from_txt(content)
+    """解析简历（支持 TXT & PDF）"""
+    if filename.endswith(".txt"):
+        text = extract_text_from_txt(content)
+    elif filename.endswith(".pdf"):
+        text = extract_text_from_pdf(content)
+    else:
+        return {"error": "Only .txt and .pdf files are supported"}
 
     parsed_resume = {
         "name": extract_name(text),
