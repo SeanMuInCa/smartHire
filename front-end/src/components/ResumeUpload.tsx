@@ -28,7 +28,7 @@ const ResumeUpload = () => {
 
       dispatch(setParsedData(response.data.parsed_resume));
       dispatch(setMatchedJobs(response.data.matched_jobs));
-      
+
       setUploadStatus('analyzing');
       setTimeout(() => {
         setUploadStatus('matching');
@@ -58,13 +58,14 @@ const ResumeUpload = () => {
 
       <div className={`${matchedJobs.length > 0 && uploadStatus === 'complete' ? 'grid grid-cols-5' : ''} w-full`}>
         <div className={`${matchedJobs.length > 0 && uploadStatus === 'complete' ? 'col-span-3 border-r pr-6' : 'w-full'}`}>
-          <h2 className="text-xl font-semibold">Upload Resume</h2>
+
           {!parsedData ? (
             <>
-              <input 
-                type="file" 
-                accept=".txt, .pdf" 
-                onChange={handleUpload} 
+              <h2 className="text-xl font-semibold">Upload Resume</h2>
+              <input
+                type="file"
+                accept=".txt, .pdf"
+                onChange={handleUpload}
                 className="mt-4"
                 disabled={uploadStatus !== 'idle' && uploadStatus !== 'complete'}
               />
@@ -94,7 +95,7 @@ const ResumeUpload = () => {
                   <p><strong>Title:</strong> {job.title}</p>
                   <p><strong>Company:</strong> {job.company}</p>
                   <p><strong>Location:</strong> {job.location}</p>
-                  <p><strong>Similarity:</strong> {job.similarity.toFixed(3)}</p>
+                  <p><strong>Match Rate:</strong> {(job.similarity * 100).toFixed(1)}%</p>
                 </li>
               ))}
             </ul>
