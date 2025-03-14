@@ -4,6 +4,8 @@ import os
 import sqlite3
 from service.resume_parser import parse_resume
 from service.matching import match_jobs_with_faiss
+from typing import List
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -37,6 +39,10 @@ async def preflight(full_path: str):
 @app.get("/")
 def read_root():
     return {"message": "Welcome to AI Recruitment Backend!"}
+
+class SkillsInput(BaseModel):
+    skills: List[str]
+
 @app.post("/upload_resume/")
 async def upload_resume(file: UploadFile = File(...)):
     """接收文件上传并解析简历"""
@@ -50,5 +56,14 @@ async def upload_resume(file: UploadFile = File(...)):
         matched_jobs = match_jobs_with_faiss(parsed_resume["skills"], top_k=5)
 
         return {"parsed_resume": parsed_resume, "matched_jobs": matched_jobs}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/match_jobs/")
+async def match_jobs(skills_input: SkillsInput):
+    """只进行职位匹配的接口"""
+    try:
+        matched_jobs = match_jobs_with_faiss(skills_input.skills, top_k=5)
+        return {"matched_jobs": matched_jobs}
     except Exception as e:
         return {"error": str(e)}
