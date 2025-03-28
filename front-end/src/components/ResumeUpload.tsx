@@ -54,7 +54,7 @@ const ResumeUpload = () => {
         const formData = new FormData();
         formData.append("file", file);
         
-        const response = await axiosService.post("/upload_resume/", formData, {
+        const response = await axiosService.post("/upload/", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         

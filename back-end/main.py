@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import sqlite3
 from service.resume_parser import parse_resume
-from service.matching import match_jobs_with_faiss
+from service.matching import match_jobs_with_faiss, match_candidates_with_faiss
 from typing import List
 from pydantic import BaseModel
 
@@ -43,7 +43,15 @@ def read_root():
 class SkillsInput(BaseModel):
     skills: List[str]
 
-@app.post("/upload_resume/")
+class JobRequirement(BaseModel):
+    title: str
+    requiredSkills: List[str]
+    experience: str
+    education: str
+    location: str
+    description: str
+
+@app.post("/upload/")
 async def upload_resume(file: UploadFile = File(...)):
     """接收文件上传并解析简历"""
     try:
@@ -65,5 +73,18 @@ async def match_jobs(skills_input: SkillsInput):
     try:
         matched_jobs = match_jobs_with_faiss(skills_input.skills, top_k=5)
         return {"matched_jobs": matched_jobs}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/match_candidates/")
+async def match_candidates(job_requirement: JobRequirement):
+    """根据职位要求匹配候选人"""
+    try:
+        matched_candidates = match_candidates_with_faiss(
+            job_requirement.requiredSkills,
+            job_requirement.education,
+            top_k=5
+        )
+        return {"matched_candidates": matched_candidates}
     except Exception as e:
         return {"error": str(e)}
