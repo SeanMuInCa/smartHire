@@ -30,9 +30,24 @@ const JobPostForm = () => {
   
   const [matchedCandidates, setMatchedCandidates] = useState<MatchedCandidate[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    // 验证教育背景
+    if (!formData.education) {
+      setError("请选择所需教育背景");
+      return;
+    }
+
+    // 验证技能
+    if (formData.requiredSkills.length === 0) {
+      setError("请至少输入一个所需技能");
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
@@ -41,6 +56,7 @@ const JobPostForm = () => {
     } catch (error) {
       console.error("Failed to match candidates:", error);
       setMatchedCandidates([]);
+      setError("匹配候选人失败，请重试");
     } finally {
       setIsSubmitting(false);
     }
@@ -62,7 +78,7 @@ const JobPostForm = () => {
         </div>
 
         <div>
-          <label className="block mb-1">Required Skills</label>
+          <label className="block mb-1">Required Skills <span className="text-red-500">*</span></label>
           <input
             type="text"
             placeholder="Enter skills separated by commas"
@@ -71,15 +87,18 @@ const JobPostForm = () => {
               requiredSkills: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
             })}
             className="w-full border rounded p-2"
+            required
           />
+
         </div>
 
         <div>
-          <label className="block mb-1">Required Education</label>
+          <label className="block mb-1">Required Education <span className="text-red-500">*</span></label>
           <select
             value={formData.education}
             onChange={e => setFormData({...formData, education: e.target.value})}
             className="w-full border rounded p-2"
+            required
           >
             <option value="">Select Education Level</option>
             <option value="Bachelor">Bachelor's Degree</option>
@@ -107,10 +126,16 @@ const JobPostForm = () => {
           />
         </div>
 
+        {error && (
+          <div className="text-red-500 text-sm mt-2">
+            {error}
+          </div>
+        )}
+
         <button
           type="submit"
           disabled={isSubmitting}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
         >
           {isSubmitting ? "Matching..." : "Find Matching Candidates"}
         </button>
