@@ -35,6 +35,19 @@ const ResumeUpload = () => {
         
         dispatch(setParsedData(parsedResume));
         
+        // 保存到后端数据库
+        try {
+          console.log('保存解析结果到后端数据库');
+          const saveResponse = await axiosService.post("/save_resume/", parsedResume);
+          console.log('保存结果:', saveResponse.data);
+          
+          if (saveResponse.data.error) {
+            console.error('保存简历失败:', saveResponse.data.error);
+          }
+        } catch (error) {
+          console.error('保存简历到数据库时发生错误:', error);
+        }
+        
         setUploadStatus('matching');
         console.log('发送技能列表到后端:', parsedResume.skills);
         
