@@ -3,9 +3,37 @@ import { useDispatch, useSelector } from "react-redux";
 import { setParsedData, setMatchedJobs } from "../store/resumeUploadSlice";
 import { parseResumeFromPdf } from "../utils/pdfParser";
 import axiosService from "../services";
-import { FiInfo } from 'react-icons/fi';
+import { FiInfo, FiUpload, FiFileText, FiMapPin, FiCalendar, FiMail, FiPhone } from 'react-icons/fi';
+import { BiBuildings, BiDollarCircle, BiTime } from 'react-icons/bi';
+import { MdWork, MdSchool, MdPerson } from 'react-icons/md';
+import { AiOutlineCloudUpload, AiOutlineFileSearch, AiOutlineThunderbolt } from 'react-icons/ai';
+import { BsStars, BsLightningCharge, BsCheckCircleFill } from 'react-icons/bs';
+import { HiOutlineDocumentText, HiOutlineClipboardCheck } from 'react-icons/hi';
 import Loading from "./Loading";
 import { RootState } from "../store";
+
+interface Education {
+  institution?: string;
+  studyType: string;
+  startDate?: string;
+  endDate?: string;
+  area?: string;
+}
+
+interface Skill {
+  name: string;
+}
+
+interface Job {
+  job_title: string;
+  company: string;
+  location?: string;
+  job_description?: string;
+  required_skills?: string;
+  similarity: number;
+  salary?: string;
+  job_type?: string;
+}
 
 const ResumeUpload = () => {
   const dispatch = useDispatch();
@@ -16,6 +44,7 @@ const ResumeUpload = () => {
 
   const parsedData = useSelector((state: RootState) => state.resumeUpload.parsedData);
   const matchedJobs = useSelector((state: RootState) => state.resumeUpload.matchedJobs);
+  const [dragActive, setDragActive] = useState(false);
 
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) return;
@@ -23,7 +52,35 @@ const ResumeUpload = () => {
     
     setUploadStatus('uploading');
     setError(null);
+    await processFile(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
     
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      setUploadStatus('uploading');
+      setError(null);
+      await processFile(file);
+    }
+  };
+  
+  const processFile = async (file: File) => {
     try {
       // PDF 文件处理逻辑
       if (file.type === 'application/pdf') {
@@ -178,7 +235,7 @@ const ResumeUpload = () => {
                 
                 return educationEntry;
               })
-              .filter((edu) => edu !== null) : [],
+              .filter((edu: Record<string, string>) => edu !== null) : [],
             work: [],
             skills: parsed_resume.skills ? parsed_resume.skills.map((skill: string) => ({
               name: skill
@@ -207,104 +264,261 @@ const ResumeUpload = () => {
   };
 
   return (
-    <div className="p-6 bg-white shadow-md rounded-lg relative">
-      {uploadStatus !== 'idle' && uploadStatus !== 'complete' && (
-        <div className="absolute inset-0 bg-gray-800/70 flex flex-col items-center justify-center z-10">
-          <Loading />
-          <p className="mt-4 text-white text-lg">
-            {uploadStatus === 'uploading' && 'Uploading file...'}
-            {uploadStatus === 'analyzing' && 'Analyzing resume...'}
-            {uploadStatus === 'matching' && 'Matching jobs...'}
-          </p>
-        </div>
-      )}
+    <div className="flex flex-col bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen p-4 sm:p-6 md:p-8">
+      <div className="container mx-auto max-w-5xl">
+        <div className="relative bg-white rounded-xl shadow-lg overflow-hidden">
+          {uploadStatus !== 'idle' && uploadStatus !== 'complete' && (
+            <div className="absolute inset-0 bg-gray-800/80 flex flex-col items-center justify-center z-10 backdrop-blur-sm">
+              <Loading />
+              <p className="mt-6 text-white text-lg font-medium">
+                {uploadStatus === 'uploading' && (
+                  <span className="flex items-center">
+                    <FiUpload className="mr-2" /> Uploading file...
+                  </span>
+                )}
+                {uploadStatus === 'analyzing' && (
+                  <span className="flex items-center">
+                    <AiOutlineFileSearch className="mr-2" /> Analyzing resume...
+                  </span>
+                )}
+                {uploadStatus === 'matching' && (
+                  <span className="flex items-center">
+                    <AiOutlineThunderbolt className="mr-2" /> Matching jobs...
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
 
-      <h2 className="text-xl font-semibold">Upload Resume</h2>
-      
-      <div className="mt-4">
-        <input
-          type="file"
-          accept=".pdf,.txt"
-          onChange={handleUpload}
-          className="mt-4"
-          disabled={uploadStatus !== 'idle' && uploadStatus !== 'complete'}
-        />
-        
-        <div className="flex items-center mt-2 text-sm bg-orange-50 text-orange-700 p-2 rounded-md">
-          <FiInfo className="mr-2 flex-shrink-0" />
-          <p>Supports PDF and TXT files</p>
-        </div>
-        
-        {error && (
-          <div className="mt-2 text-sm text-red-600 bg-red-50 p-2 rounded-md">
-            <p>{error}</p>
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
+            <h1 className="text-2xl md:text-3xl font-bold flex items-center">
+              <MdPerson className="mr-3 text-3xl" /> Jobseeker Portal
+            </h1>
+            <p className="mt-2 opacity-90">Upload your resume and find matching job opportunities</p>
           </div>
-        )}
-      </div>
-
-      {parsedData && (
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold">Parsing Results</h3>
-          <div className="mt-2 space-y-4">
-            <div>
-              <p><strong>Name:</strong> {parsedData.basics?.name || 'Not detected'}</p>
-              <p><strong>Email:</strong> {parsedData.basics?.email || 'Not detected'}</p>
-              <p><strong>Phone:</strong> {parsedData.basics?.phone || 'Not detected'}</p>
+          
+          <div className="p-6">
+            <div 
+              className={`mb-8 border-2 border-dashed rounded-lg p-8 ${
+                dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-400'
+              } transition-all duration-300 flex flex-col items-center justify-center text-center`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <div className="w-16 h-16 mb-4 text-blue-500 flex items-center justify-center">
+                <AiOutlineCloudUpload className="w-full h-full" />
+              </div>
+              
+              <h3 className="text-xl font-medium text-gray-800 mb-2">Upload Your Resume</h3>
+              <p className="text-gray-500 mb-4">Drag and drop a file or click the button below</p>
+              
+              <div className="relative">
+                <input
+                  type="file"
+                  accept=".pdf,.txt"
+                  onChange={handleUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  disabled={uploadStatus !== 'idle' && uploadStatus !== 'complete'}
+                />
+                <button
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center shadow-md transition-colors disabled:bg-gray-400"
+                  disabled={uploadStatus !== 'idle' && uploadStatus !== 'complete'}
+                >
+                  <HiOutlineDocumentText className="mr-2" /> Select File
+                </button>
+              </div>
+              
+              <div className="flex items-center mt-6 text-sm bg-blue-50 text-blue-700 p-3 rounded-md">
+                <FiInfo className="mr-2 flex-shrink-0" />
+                <p>Supports PDF and TXT formats, maximum file size 10MB</p>
+              </div>
             </div>
             
-            <div>
-              <h4 className="font-semibold">Education</h4>
-              {parsedData.education?.length > 0 ? (
-                <ul className="list-disc pl-5">
-                  {parsedData.education.map((edu, index) => (
-                    <li key={index}>
-                      {[
-                        edu.studyType,
-                        edu.area,
-                        edu.institution,
-                        edu.startDate && edu.endDate ? `${edu.startDate}-${edu.endDate}` : null
-                      ].filter(Boolean).join(' - ')}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-500">No education history detected</p>
-              )}
-            </div>
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-md flex items-start">
+                <FiInfo className="mr-3 mt-0.5 text-red-500" />
+                <p>{error}</p>
+              </div>
+            )}
 
-            <div>
-              <h4 className="font-semibold">Skills</h4>
-              {parsedData.skills?.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {parsedData.skills.map((skill, index) => (
-                    <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 rounded">
-                      {skill.name}
-                    </span>
+            {parsedData && (
+              <div className="animate-fadeIn">
+                <div className="mb-8">
+                  <div className="flex items-center mb-4">
+                    <MdPerson className="mr-2 text-blue-600" />
+                    <h3 className="text-xl font-bold text-gray-800">Personal Information</h3>
+                  </div>
+                  
+                  <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="flex items-start">
+                        <div className="mt-1 mr-3 text-gray-500">
+                          <MdPerson />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Name</p>
+                          <p className="font-medium text-gray-800">{parsedData.basics?.name || 'Not detected'}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start">
+                        <div className="mt-1 mr-3 text-gray-500">
+                          <FiMail />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Email</p>
+                          <p className="font-medium text-gray-800">{parsedData.basics?.email || 'Not detected'}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start">
+                        <div className="mt-1 mr-3 text-gray-500">
+                          <FiPhone />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Phone</p>
+                          <p className="font-medium text-gray-800">{parsedData.basics?.phone || 'Not detected'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {parsedData.education && parsedData.education.length > 0 && (
+                  <div className="mb-8">
+                    <div className="flex items-center mb-4">
+                      <MdSchool className="mr-2 text-blue-600" />
+                      <h3 className="text-xl font-bold text-gray-800">Education</h3>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {parsedData.education.map((edu: Education, index: number) => (
+                        <div key={index} className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+                          <div className="flex flex-wrap md:flex-nowrap md:items-center mb-2">
+                            <h4 className="font-semibold text-gray-800 mr-2">
+                              {edu.institution || 'Unknown Institution'}
+                            </h4>
+                            {(edu.startDate || edu.endDate) && (
+                              <div className="flex items-center text-sm text-gray-500">
+                                <FiCalendar className="mr-1" />
+                                <span>{edu.startDate || '?'} - {edu.endDate || 'Present'}</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-1 text-gray-700">
+                            {edu.studyType && (
+                              <p className="flex items-center">
+                                <MdSchool className="mr-2 text-gray-500" />
+                                {edu.studyType}
+                              </p>
+                            )}
+                            {edu.area && (
+                              <p className="flex items-center">
+                                <BsStars className="mr-2 text-gray-500" />
+                                {edu.area}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {parsedData.skills && parsedData.skills.length > 0 && (
+                  <div className="mb-8">
+                    <div className="flex items-center mb-4">
+                      <BsStars className="mr-2 text-blue-600" />
+                      <h3 className="text-xl font-bold text-gray-800">Skills</h3>
+                    </div>
+                    
+                    <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+                      <div className="flex flex-wrap gap-2">
+                        {parsedData.skills.map((skill: Skill, index: number) => (
+                          <span key={index} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                            {skill.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {matchedJobs && matchedJobs.length > 0 && (
+              <div className="mt-10 animate-fadeIn">
+                <div className="flex items-center mb-6">
+                  <BsLightningCharge className="mr-2 text-yellow-500 text-2xl" />
+                  <h2 className="text-2xl font-bold text-gray-800">Matching Jobs ({matchedJobs.length})</h2>
+                </div>
+                
+                <div className="space-y-4">
+                  {matchedJobs.map((job: Job, index: number) => (
+                    <div key={index} className="bg-white border border-gray-200 rounded-lg p-5 shadow hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 className="text-xl font-semibold text-gray-800">{job.job_title}</h3>
+                          <p className="text-blue-600 font-medium">{job.company}</p>
+                        </div>
+                        <div className="bg-green-100 text-green-800 rounded-full px-3 py-1 text-sm flex items-center">
+                          <BsCheckCircleFill className="mr-1" />
+                          匹配度: {(job.similarity * 100).toFixed(0)}%
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-x-6 gap-y-2 mb-3 text-gray-700">
+                        {job.location && (
+                          <div className="flex items-center text-sm">
+                            <FiMapPin className="mr-1 text-gray-500" />
+                            {job.location}
+                          </div>
+                        )}
+                        
+                        {job.salary && (
+                          <div className="flex items-center text-sm">
+                            <BiDollarCircle className="mr-1 text-gray-500" />
+                            {job.salary}
+                          </div>
+                        )}
+                        
+                        {job.job_type && (
+                          <div className="flex items-center text-sm">
+                            <BiTime className="mr-1 text-gray-500" />
+                            {job.job_type}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {job.job_description && (
+                        <p className="text-gray-600 mb-4 line-clamp-2">{job.job_description}</p>
+                      )}
+                      
+                      {job.required_skills && (
+                        <div>
+                          <p className="text-sm text-gray-500 mb-1">Required Skills:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {job.required_skills.split(',').map((skill: string, idx: number) => (
+                              <span 
+                                key={idx} 
+                                className="bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs"
+                              >
+                                {skill.trim()}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
-              ) : (
-                <p className="text-gray-500">No skills detected</p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {matchedJobs && matchedJobs.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold">Matched Jobs</h3>
-          <div className="mt-2">
-            {matchedJobs.map((job, index) => (
-              <div key={index} className="mb-4 p-4 border rounded">
-                <p><strong>Position:</strong> {job.title}</p>
-                <p><strong>Company:</strong> {job.company}</p>
-                <p><strong>Location:</strong> {job.location}</p>
-                <p><strong>Match Rate:</strong> {(job.similarity * 100).toFixed(1)}%</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

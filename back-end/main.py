@@ -87,7 +87,6 @@ async def upload_resume(file: UploadFile = File(...)):
     try:
         print(f"接收到文件上传请求：{file.filename}")
         content = await file.read()
-        
         # 解析简历
         print("开始解析简历...")
         parsed_resume = parse_resume(content, file.filename)

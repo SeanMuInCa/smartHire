@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { Layout } from "../layouts/Layout";
 import ResumeUpload from "../components/ResumeUpload";
 import JobPostForm from "../components/JobPostForm";
+import TextResumeParser from "../components/TextResumeParser";
 
 const router = createBrowserRouter([
   {
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
       {
         path: "/employer",
         element: <JobPostForm />
+      },
+      {
+        path: "/text-parser",
+        element: <TextResumeParser />
       }
     ]
   }
